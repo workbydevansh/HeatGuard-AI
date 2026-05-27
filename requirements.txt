@@ -1,0 +1,9 @@
+streamlit
+pandas
+numpy
+scikit-learn==1.6.1
+plotly
+joblib
+python-dotenv
+google-generativeai
+matplotlib

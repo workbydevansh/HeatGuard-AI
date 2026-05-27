@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">HeatGuard AI logo</title>
+  <desc id="desc">Shield with sun and heat wave lines</desc>
+  <defs>
+    <linearGradient id="shield" x1="24" y1="14" x2="104" y2="118" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67F3C2"/>
+      <stop offset="0.52" stop-color="#20D998"/>
+      <stop offset="1" stop-color="#020604"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="36" y1="28" x2="96" y2="90" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDE68A"/>
+      <stop offset="0.62" stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#EF4444"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <path d="M64 8 106 24v32c0 29.6-17.2 51.4-42 64C39.2 107.4 22 85.6 22 56V24L64 8Z" fill="#020604"/>
+  <path d="M64 14 100 28v29.2c0 25.2-14.2 44.4-36 56.2-21.8-11.8-36-31-36-56.2V28l36-14Z" fill="url(#shield)" opacity="0.96"/>
+  <path d="M64 22 92 33v23.8c0 20.8-10.7 36.2-28 46.4C46.7 93 36 77.6 36 56.8V33l28-11Z" fill="#07170F" opacity="0.82"/>
+  <circle cx="64" cy="50" r="18" fill="url(#sun)" filter="url(#glow)"/>
+  <path d="M36 78c9-6 17-6 26 0s17 6 30 0" fill="none" stroke="#67F3C2" stroke-width="6" stroke-linecap="round"/>
+  <path d="M40 92c7-4.8 14-4.8 22 0s16 4.8 26 0" fill="none" stroke="#20D998" stroke-width="5" stroke-linecap="round"/>
+  <path d="M48 50h32M64 34v32" stroke="#020604" stroke-width="5" stroke-linecap="round" opacity="0.55"/>
+</svg>

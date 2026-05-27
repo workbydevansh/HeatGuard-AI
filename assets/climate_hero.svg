@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 390" role="img" aria-labelledby="title desc">
+  <title id="title">Climate AI illustration</title>
+  <desc id="desc">Sun, cloud, climate data nodes, and forecasting lines</desc>
+  <defs>
+    <linearGradient id="panel" x1="60" y1="32" x2="450" y2="352" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#07170F"/>
+      <stop offset="1" stop-color="#020604"/>
+    </linearGradient>
+    <linearGradient id="cyanEmerald" x1="72" y1="52" x2="460" y2="310" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67F3C2"/>
+      <stop offset="1" stop-color="#20D998"/>
+    </linearGradient>
+    <linearGradient id="hot" x1="280" y1="54" x2="414" y2="182" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDE68A"/>
+      <stop offset="0.6" stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#EF4444"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+  </defs>
+  <rect x="32" y="28" width="456" height="330" rx="24" fill="url(#panel)" stroke="#67F3C2" stroke-opacity="0.2"/>
+  <path d="M66 292C126 232 170 255 224 207s89-91 159-88c46 2 76 28 101 57v135H66v-19Z" fill="#67F3C2" opacity="0.08"/>
+  <circle cx="367" cy="100" r="42" fill="url(#hot)"/>
+  <circle cx="367" cy="100" r="67" fill="#F59E0B" opacity="0.12" filter="url(#soft)"/>
+  <path d="M134 138c8-28 34-47 64-47 28 0 52 16 63 39 7-3 14-5 22-5 30 0 55 24 55 54H101c0-22 14-39 33-41Z" fill="#F6FBF8" opacity="0.92"/>
+  <path d="M101 179h237" stroke="#9FB3AA" stroke-opacity="0.28" stroke-width="2"/>
+  <path d="M96 263c38-50 76-25 116-64 30-30 54-39 86-24 41 20 73-18 116-72" fill="none" stroke="#67F3C2" stroke-width="7" stroke-linecap="round"/>
+  <path d="M96 300c34-26 69-32 105-18 39 16 70 9 103-24 34-33 72-42 120-26" fill="none" stroke="#20D998" stroke-width="5" stroke-linecap="round" opacity="0.88"/>
+  <path d="M96 235h328M96 273h328M96 311h328" stroke="#9FB3AA" stroke-opacity="0.15" stroke-width="2"/>
+  <circle cx="96" cy="263" r="8" fill="#67F3C2"/>
+  <circle cx="212" cy="199" r="8" fill="#67F3C2"/>
+  <circle cx="298" cy="175" r="8" fill="#67F3C2"/>
+  <circle cx="414" cy="103" r="8" fill="#67F3C2"/>
+  <circle cx="160" cy="286" r="7" fill="#20D998"/>
+  <circle cx="304" cy="258" r="7" fill="#20D998"/>
+  <circle cx="424" cy="232" r="7" fill="#20D998"/>
+  <g opacity="0.86">
+    <rect x="78" y="62" width="94" height="42" rx="8" fill="#020604" stroke="#67F3C2" stroke-opacity="0.3"/>
+    <path d="M94 87h23M94 77h48M128 87h24" stroke="#67F3C2" stroke-width="4" stroke-linecap="round"/>
+    <rect x="332" y="266" width="112" height="52" rx="8" fill="#020604" stroke="#20D998" stroke-opacity="0.34"/>
+    <path d="M350 296h26M350 286h70M388 296h35" stroke="#20D998" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>
