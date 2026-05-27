@@ -245,33 +245,41 @@
       }
 
       .gauge-ring {
-        width: 178px;
+        width: 198px;
         aspect-ratio: 1;
         border-radius: 50%;
         display: grid;
         place-items: center;
         background:
-          conic-gradient(var(--gauge-color) var(--gauge-angle), rgba(255, 255, 255, 0.08) 0),
-          radial-gradient(circle, rgba(5, 14, 10, 0.98) 58%, transparent 59%);
+          radial-gradient(circle, rgba(5, 14, 10, 0.98) 0 61%, transparent 62%),
+          conic-gradient(var(--gauge-color) var(--gauge-angle), rgba(255, 255, 255, 0.08) 0);
         border: 1px solid var(--line);
       }
 
       .gauge-value {
         text-align: center;
+        display: grid;
+        gap: 7px;
+        justify-items: center;
       }
 
       .gauge-number {
-        font-size: 2.15rem;
+        font-size: 1.95rem;
         font-weight: 950;
-        color: var(--gauge-color);
+        color: #ffffff;
         font-variant-numeric: tabular-nums;
+        line-height: 1;
       }
 
       .gauge-label {
-        color: var(--muted);
-        font-size: 0.82rem;
-        font-weight: 800;
+        color: var(--risk-ink, #03100a);
+        background: var(--gauge-color);
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 0.76rem;
+        font-weight: 950;
         text-transform: uppercase;
+        letter-spacing: 0;
       }
 
       .kpis {
@@ -363,11 +371,25 @@
       }
 
       .advice-item {
-        border-left: 3px solid var(--mint);
+        border-left: 4px solid var(--mint);
         background: rgba(3, 12, 8, 0.7);
         border-radius: 8px;
-        padding: 12px;
+        padding: 13px 14px;
         line-height: 1.52;
+      }
+
+      .advice-title {
+        color: var(--mint);
+        font-weight: 950;
+        margin-bottom: 5px;
+      }
+
+      .advice-body {
+        color: var(--text);
+      }
+
+      .advice-line + .advice-line {
+        margin-top: 7px;
       }
 
       .download-button {
@@ -647,10 +669,10 @@
       }
 
       function riskForWbt(value) {
-        if (value >= 30) return { label: "Extreme", color: "var(--red)", score: 100 };
-        if (value >= 27) return { label: "High", color: "var(--amber)", score: 76 };
-        if (value >= 24) return { label: "Moderate", color: "var(--cyan)", score: 56 };
-        return { label: "Low", color: "var(--mint)", score: 30 };
+        if (value >= 30) return { label: "Extreme", color: "#ff6b6b", ink: "#230505", score: 100 };
+        if (value >= 27) return { label: "High", color: "#fbbf24", ink: "#1d1300", score: 76 };
+        if (value >= 24) return { label: "Moderate", color: "#67e8f9", ink: "#00181d", score: 56 };
+        return { label: "Low", color: "#58edb7", ink: "#03100a", score: 30 };
       }
 
       function format(value, digits = 1) {
@@ -781,9 +803,10 @@
         const risk = peak.risk;
         const angle = clamp(((peak.wbt - 18) / 16) * 360, 30, 360);
         gaugeRing.style.setProperty("--gauge-color", risk.color);
+        gaugeRing.style.setProperty("--risk-ink", risk.ink);
         gaugeRing.style.setProperty("--gauge-angle", `${angle}deg`);
         document.getElementById("peakValue").textContent = `${format(peak.wbt)} C`;
-        document.getElementById("peakRisk").textContent = risk.label;
+        document.getElementById("peakRisk").textContent = `${risk.label} risk`;
       }
 
       function renderKpis(forecast) {
@@ -855,17 +878,53 @@
       function renderAdvisory(forecast) {
         const peak = forecast.reduce((best, row) => (row.wbt > best.wbt ? row : best), forecast[0]);
         const risk = peak.risk.label;
-        const main = {
-          Low: "Low risk: maintain routine hydration messaging and continue monitoring high-humidity windows.",
-          Moderate: "Moderate risk: schedule outdoor work earlier, increase water breaks, and watch vulnerable groups.",
-          High: "High risk: reduce strenuous outdoor exposure, prepare cooling spaces, and coordinate hospital readiness.",
-          Extreme: "Extreme risk: activate heat action protocols, restrict peak-hour outdoor work, and issue urgent advisories."
+        const plan = {
+          Low: {
+            citizens: "Maintain normal hydration and check on elderly family members during humid hours.",
+            schools: "Run regular schedules, keep drinking water available, and monitor assembly/outdoor activity duration.",
+            workers: "Use routine breaks and keep shade access available for longer outdoor shifts.",
+            hospitals: "Continue routine heat-illness surveillance; no surge staffing trigger.",
+            authorities: "Keep public heat-risk messaging active and monitor the next forecast update."
+          },
+          Moderate: {
+            citizens: "Drink water before feeling thirsty, avoid unnecessary afternoon exposure, and watch children and elderly people.",
+            schools: "Move sports/PT to morning slots and keep shaded rest areas ready.",
+            workers: "Shift heavy outdoor work earlier, add water breaks every 30-45 minutes, and use buddy checks.",
+            hospitals: "Prepare triage notes for dehydration and heat exhaustion; check ORS/cooling supplies.",
+            authorities: "Open public water points in busy areas and push ward-level advisories before the peak day."
+          },
+          High: {
+            citizens: "Avoid peak-hour outdoor travel, use cooling spaces, and seek help for dizziness or confusion.",
+            schools: "Cancel strenuous outdoor activity and consider shortened afternoon schedules.",
+            workers: "Stop heavy work during the hottest window; mandate shade, water, and supervisor monitoring.",
+            hospitals: "Activate heat surge readiness, staff emergency intake, and prepare rapid cooling protocols.",
+            authorities: "Issue high-risk alerts, coordinate shelters/water points, and monitor power and hospital load."
+          },
+          Extreme: {
+            citizens: "Stay indoors or in cooling centers; treat confusion, fainting, or hot dry skin as urgent.",
+            schools: "Suspend outdoor activity and move vulnerable students to cooled rooms.",
+            workers: "Halt non-essential outdoor labor during peak hours and enforce emergency heat protocols.",
+            hospitals: "Activate emergency surge plans and prioritize heat stroke rapid response.",
+            authorities: "Trigger heat action plan escalation, public alerts, cooling centers, and emergency coordination."
+          }
         };
-        document.getElementById("adviceMain").textContent = `${risk} peak on Day ${peak.day}: ${main[risk]}`;
-        document.getElementById("adviceOps").textContent =
-          "Operations: use the peak day and trend direction to prioritize school timings, worker shifts, public water points, and hospital staffing.";
-        document.getElementById("advicePublic").textContent =
-          "Public guidance: keep fluids available, avoid direct sun during afternoon hours, and seek help quickly for dizziness, confusion, or hot dry skin.";
+        const selected = plan[risk];
+        document.getElementById("adviceMain").innerHTML = `
+          <div class="advice-title">Citizens and families</div>
+          <div class="advice-body">${risk} peak on Day ${peak.day}. ${selected.citizens}</div>
+        `;
+        document.getElementById("adviceOps").innerHTML = `
+          <div class="advice-title">Schools, outdoor workers, and hospitals</div>
+          <div class="advice-body">
+            <div class="advice-line"><strong>Schools:</strong> ${selected.schools}</div>
+            <div class="advice-line"><strong>Workers:</strong> ${selected.workers}</div>
+            <div class="advice-line"><strong>Hospitals:</strong> ${selected.hospitals}</div>
+          </div>
+        `;
+        document.getElementById("advicePublic").innerHTML = `
+          <div class="advice-title">Local authorities</div>
+          <div class="advice-body">${selected.authorities}</div>
+        `;
       }
 
       function update() {
