@@ -5,20 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="HeatGuard AI forecasts 10-day wet-bulb heat risk for the Aether IIIT Lucknow Wet-Bulb Forecasting Challenge 2026."
+      content="HeatGuard AI live wet-bulb heat risk dashboard with adjustable climate inputs and 10-day forecast."
     />
-    <title>HeatGuard AI | Wet-Bulb Forecasting</title>
+    <title>HeatGuard AI | Live WBT Dashboard</title>
     <style>
       :root {
-        --bg: #04100c;
-        --ink: #f6fbf8;
-        --muted: #a8bbb2;
-        --line: rgba(132, 247, 203, 0.18);
-        --cyan: #67f3c2;
-        --green: #20d998;
+        --bg: #07100d;
+        --panel: rgba(9, 23, 18, 0.88);
+        --panel-strong: rgba(13, 31, 24, 0.96);
+        --line: rgba(126, 231, 191, 0.2);
+        --text: #f7fbf8;
+        --muted: #a9b9b2;
+        --mint: #58edb7;
+        --cyan: #7dd3fc;
         --amber: #f4b547;
         --red: #f36b6b;
-        --blue: #7dd3fc;
+        --violet: #a78bfa;
+        --ink: #03100a;
       }
 
       * {
@@ -27,378 +30,892 @@
 
       body {
         margin: 0;
-        background: #020604;
-        color: var(--ink);
+        background:
+          radial-gradient(circle at 82% 8%, rgba(244, 181, 71, 0.16), transparent 26%),
+          radial-gradient(circle at 8% 88%, rgba(125, 211, 252, 0.13), transparent 32%),
+          linear-gradient(180deg, #081710 0%, #020604 100%);
+        color: var(--text);
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
-      a {
-        color: inherit;
+      button,
+      input {
+        font: inherit;
       }
 
-      .shell {
+      .app {
         min-height: 100vh;
-        background:
-          linear-gradient(140deg, rgba(4, 16, 12, 0.78), rgba(1, 7, 5, 0.92)),
-          url("assets/climate_hero.svg") center top / cover no-repeat;
       }
 
-      header {
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid var(--line);
+        background: rgba(3, 10, 7, 0.9);
+        backdrop-filter: blur(16px);
+      }
+
+      .topbar-inner {
+        max-width: 1260px;
+        margin: 0 auto;
+        padding: 14px 22px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 20px;
-        max-width: 1180px;
-        margin: 0 auto;
-        padding: 24px;
+        gap: 16px;
       }
 
       .brand {
         display: flex;
         align-items: center;
         gap: 12px;
-        font-weight: 850;
+        min-width: 0;
       }
 
       .brand img {
-        width: 42px;
-        height: 42px;
+        width: 38px;
+        height: 38px;
       }
 
-      nav {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
+      .brand-title {
+        font-size: 1.05rem;
+        font-weight: 900;
       }
 
-      .nav-link,
-      .button {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 10px 14px;
-        text-decoration: none;
-        color: var(--ink);
-        background: rgba(3, 13, 9, 0.72);
-        font-weight: 750;
+      .brand-subtitle {
+        color: var(--muted);
+        font-size: 0.78rem;
+        margin-top: 2px;
       }
 
-      .button.primary {
-        background: linear-gradient(135deg, var(--cyan), var(--green));
-        color: #03100a;
-        border-color: transparent;
+      .status-pill {
+        border: 1px solid rgba(88, 237, 183, 0.34);
+        color: var(--mint);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 0.82rem;
+        font-weight: 850;
+        white-space: nowrap;
+        background: rgba(88, 237, 183, 0.08);
       }
 
       main {
-        max-width: 1180px;
+        max-width: 1260px;
         margin: 0 auto;
-        padding: 16px 24px 48px;
+        padding: 22px;
       }
 
-      .hero {
+      .dashboard {
         display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
-        gap: 28px;
-        align-items: center;
-        min-height: 72vh;
+        grid-template-columns: 360px minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
       }
 
-      .eyebrow {
-        color: var(--cyan);
-        font-size: 0.78rem;
+      .panel {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 8px;
+        box-shadow: 0 22px 58px rgba(0, 0, 0, 0.32);
+      }
+
+      .controls {
+        position: sticky;
+        top: 84px;
+        max-height: calc(100vh - 104px);
+        overflow: auto;
+      }
+
+      .panel-header {
+        padding: 16px 16px 10px;
+        border-bottom: 1px solid rgba(126, 231, 191, 0.12);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(1.8rem, 3vw, 3rem);
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        font-size: 1.02rem;
+        letter-spacing: 0;
+      }
+
+      .muted {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .small {
+        font-size: 0.84rem;
+      }
+
+      .section {
+        padding: 14px 16px 16px;
+      }
+
+      .preset-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .preset,
+      .download-button {
+        border: 1px solid rgba(126, 231, 191, 0.24);
+        background: rgba(3, 12, 8, 0.74);
+        color: var(--text);
+        border-radius: 8px;
+        padding: 10px 8px;
+        cursor: pointer;
+        font-weight: 800;
+      }
+
+      .preset.active {
+        background: linear-gradient(135deg, var(--mint), #28d49b);
+        color: var(--ink);
+        border-color: transparent;
+      }
+
+      .control {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .control-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: #dfe9e4;
+        font-weight: 750;
+      }
+
+      .control-value {
+        color: var(--mint);
+        font-variant-numeric: tabular-nums;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--mint);
+      }
+
+      .main-stack {
+        display: grid;
+        gap: 16px;
+      }
+
+      .hero-panel {
+        padding: 22px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 260px;
+        gap: 18px;
+        align-items: center;
+        background:
+          linear-gradient(145deg, rgba(10, 28, 21, 0.96), rgba(3, 11, 8, 0.9)),
+          url("assets/climate_hero.svg") center / cover no-repeat;
+      }
+
+      .hero-copy {
+        display: grid;
+        gap: 10px;
+      }
+
+      .tag {
+        color: var(--mint);
+        text-transform: uppercase;
+        font-size: 0.74rem;
+        font-weight: 900;
+      }
+
+      .gauge {
+        min-height: 190px;
+        display: grid;
+        place-items: center;
+      }
+
+      .gauge-ring {
+        width: 178px;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background:
+          conic-gradient(var(--gauge-color) var(--gauge-angle), rgba(255, 255, 255, 0.08) 0),
+          radial-gradient(circle, rgba(5, 14, 10, 0.98) 58%, transparent 59%);
+        border: 1px solid var(--line);
+      }
+
+      .gauge-value {
+        text-align: center;
+      }
+
+      .gauge-number {
+        font-size: 2.15rem;
+        font-weight: 950;
+        color: var(--gauge-color);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .gauge-label {
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .kpi {
+        padding: 14px;
+        border: 1px solid var(--line);
+        background: var(--panel-strong);
+        border-radius: 8px;
+        min-height: 98px;
+      }
+
+      .kpi-label {
+        color: var(--muted);
+        font-size: 0.72rem;
         font-weight: 850;
         text-transform: uppercase;
       }
 
-      h1 {
-        margin: 14px 0 12px;
-        font-size: clamp(3rem, 7vw, 6.6rem);
-        line-height: 0.92;
-        letter-spacing: 0;
-      }
-
-      .lead {
-        max-width: 720px;
-        color: #d9e8e0;
-        font-size: clamp(1.05rem, 2vw, 1.32rem);
-        line-height: 1.62;
-      }
-
-      .actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 26px;
-      }
-
-      .visual {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: rgba(2, 8, 5, 0.76);
-        padding: 18px;
-        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
-      }
-
-      .forecast {
-        display: grid;
-        gap: 10px;
-      }
-
-      .forecast-row {
-        display: grid;
-        grid-template-columns: 62px 1fr 82px;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .bar {
-        height: 12px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.08);
-        overflow: hidden;
-      }
-
-      .fill {
-        display: block;
-        height: 100%;
-        border-radius: inherit;
-      }
-
-      .metrics {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-        margin: -18px 0 34px;
-      }
-
-      .card,
-      .panel {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: rgba(3, 13, 9, 0.82);
-        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
-      }
-
-      .card {
-        padding: 18px;
-      }
-
-      .label {
-        color: var(--muted);
-        font-size: 0.78rem;
-        font-weight: 820;
-        text-transform: uppercase;
-      }
-
-      .value {
-        margin-top: 8px;
+      .kpi-value {
+        margin-top: 10px;
         font-size: 1.55rem;
-        font-weight: 880;
+        font-weight: 950;
+        font-variant-numeric: tabular-nums;
       }
 
-      .grid {
+      .chart-panel {
+        padding: 18px;
+      }
+
+      .chart-head {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 8px;
+      }
+
+      #forecastChart {
+        width: 100%;
+        height: 360px;
+        display: block;
+      }
+
+      .details {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(280px, 0.72fr);
         gap: 16px;
       }
 
-      .panel {
-        padding: 22px;
-      }
-
-      h2 {
-        margin: 0 0 14px;
-        font-size: 1.3rem;
-      }
-
-      p {
-        color: var(--muted);
-        line-height: 1.62;
-      }
-
-      .steps {
-        display: grid;
-        gap: 10px;
-        margin-top: 18px;
-      }
-
-      .step {
-        display: grid;
-        grid-template-columns: 38px 1fr;
-        gap: 12px;
-        align-items: start;
-      }
-
-      .number {
-        width: 34px;
-        height: 34px;
-        border-radius: 8px;
-        display: grid;
-        place-items: center;
-        color: #03100a;
-        background: var(--cyan);
-        font-weight: 900;
-      }
-
-      .montage {
+      .forecast-table {
         width: 100%;
-        border-radius: 8px;
-        border: 1px solid var(--line);
-        background: #020604;
+        border-collapse: collapse;
+        font-variant-numeric: tabular-nums;
       }
 
-      footer {
-        max-width: 1180px;
-        margin: 0 auto;
-        padding: 24px;
+      .forecast-table th,
+      .forecast-table td {
+        text-align: left;
+        padding: 11px 8px;
+        border-bottom: 1px solid rgba(126, 231, 191, 0.12);
+      }
+
+      .forecast-table th {
         color: var(--muted);
+        font-size: 0.74rem;
+        text-transform: uppercase;
       }
 
-      @media (max-width: 860px) {
-        header,
-        .hero,
-        .grid {
+      .risk-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 86px;
+        border-radius: 999px;
+        padding: 5px 9px;
+        font-weight: 850;
+        color: #03100a;
+        background: var(--mint);
+      }
+
+      .advisory {
+        display: grid;
+        gap: 12px;
+      }
+
+      .advice-item {
+        border-left: 3px solid var(--mint);
+        background: rgba(3, 12, 8, 0.7);
+        border-radius: 8px;
+        padding: 12px;
+        line-height: 1.52;
+      }
+
+      .download-button {
+        margin-top: 14px;
+        width: 100%;
+      }
+
+      @media (max-width: 980px) {
+        .dashboard,
+        .hero-panel,
+        .details {
           grid-template-columns: 1fr;
         }
 
-        header {
+        .controls {
+          position: static;
+          max-height: none;
+        }
+
+        .kpis {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 620px) {
+        main {
+          padding: 14px;
+        }
+
+        .topbar-inner {
           align-items: flex-start;
           flex-direction: column;
         }
 
-        .metrics {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          margin-top: 8px;
-        }
-      }
-
-      @media (max-width: 560px) {
-        .metrics {
+        .preset-row,
+        .kpis {
           grid-template-columns: 1fr;
         }
 
-        .forecast-row {
-          grid-template-columns: 48px 1fr 66px;
+        #forecastChart {
+          height: 300px;
         }
       }
     </style>
   </head>
   <body>
-    <div class="shell">
-      <header>
-        <div class="brand">
-          <img src="assets/heatguard_logo.svg" alt="HeatGuard AI logo" />
-          <span>HeatGuard AI</span>
+    <div class="app">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <img src="assets/heatguard_logo.svg" alt="HeatGuard AI logo" />
+            <div>
+              <div class="brand-title">HeatGuard AI</div>
+              <div class="brand-subtitle">Live wet-bulb risk simulator</div>
+            </div>
+          </div>
+          <div class="status-pill" id="modelStatus">Loading browser model</div>
         </div>
-        <nav aria-label="Project links">
-          <a class="nav-link" href="README.md">README</a>
-          <a class="nav-link" href="deliverables/HeatGuard_AI_Judge_Ready_Deck.pptx">Deck</a>
-        </nav>
       </header>
 
       <main>
-        <section class="hero">
-          <div>
-            <div class="eyebrow">Aether IIIT Lucknow Wet-Bulb Forecasting Challenge 2026</div>
-            <h1>10-Day Heat Risk Intelligence</h1>
-            <p class="lead">
-              A deployable climate dashboard that forecasts wet-bulb temperature, classifies public-health heat risk,
-              and turns model output into citizen, hospital, school, worker, and authority action advisories.
-            </p>
-            <div class="actions">
-              <a class="button primary" href="deliverables/HeatGuard_AI_Judge_Ready_Deck.pptx">View Judge Deck</a>
-              <a class="button" href="README.md">Open Project README</a>
+        <div class="dashboard">
+          <aside class="panel controls">
+            <div class="panel-header">
+              <h2>Climate Inputs</h2>
+              <p class="muted small">Adjust values to recalculate the 10-day WBT forecast.</p>
             </div>
-          </div>
 
-          <aside class="visual" aria-label="Forecast preview">
-            <div class="label">Forecast preview</div>
-            <div class="forecast" style="margin-top: 16px">
-              <div class="forecast-row">
-                <strong>Day 1</strong>
-                <div class="bar"><span class="fill" style="width: 48%; background: var(--cyan)"></span></div>
-                <span>15.0&deg;C</span>
+            <section class="section">
+              <div class="preset-row">
+                <button class="preset active" data-preset="baseline">Baseline</button>
+                <button class="preset" data-preset="heatwave">Heatwave</button>
+                <button class="preset" data-preset="monsoon">Monsoon</button>
               </div>
-              <div class="forecast-row">
-                <strong>Day 3</strong>
-                <div class="bar"><span class="fill" style="width: 47%; background: var(--cyan)"></span></div>
-                <span>15.0&deg;C</span>
-              </div>
-              <div class="forecast-row">
-                <strong>Day 6</strong>
-                <div class="bar"><span class="fill" style="width: 54%; background: var(--blue)"></span></div>
-                <span>16.6&deg;C</span>
-              </div>
-              <div class="forecast-row">
-                <strong>Day 8</strong>
-                <div class="bar"><span class="fill" style="width: 58%; background: var(--amber)"></span></div>
-                <span>17.8&deg;C</span>
-              </div>
-              <div class="forecast-row">
-                <strong>Day 10</strong>
-                <div class="bar"><span class="fill" style="width: 61%; background: var(--green)"></span></div>
-                <span>18.2&deg;C</span>
-              </div>
-            </div>
+
+              <div id="controls"></div>
+              <button class="download-button" id="downloadCsv">Download Forecast CSV</button>
+            </section>
           </aside>
-        </section>
 
-        <section class="metrics" aria-label="Model metrics">
-          <div class="card">
-            <div class="label">Validation RMSE</div>
-            <div class="value" style="color: var(--cyan)">0.446</div>
-          </div>
-          <div class="card">
-            <div class="label">Validation R2</div>
-            <div class="value" style="color: var(--green)">0.9928</div>
-          </div>
-          <div class="card">
-            <div class="label">Features</div>
-            <div class="value">237</div>
-          </div>
-          <div class="card">
-            <div class="label">Submission Rows</div>
-            <div class="value">500875</div>
-          </div>
-        </section>
-
-        <section class="grid">
-          <div class="panel">
-            <h2>What The System Does</h2>
-            <p>
-              HeatGuard AI combines time-aware feature engineering, location history, lag and rolling climate signals,
-              tree-based forecasting, explainability, risk thresholds, and advisory generation into a single challenge-ready workflow.
-            </p>
-            <div class="steps">
-              <div class="step">
-                <div class="number">1</div>
-                <p><strong>Forecast:</strong> predicts wet-bulb temperature for target days 1 through 10.</p>
+          <section class="main-stack">
+            <div class="panel hero-panel">
+              <div class="hero-copy">
+                <div class="tag">Aether IIIT Lucknow WBT Forecasting Challenge 2026</div>
+                <h1>10-Day Wet-Bulb Heat Risk Dashboard</h1>
+                <p class="muted">
+                  Browser-side model driven by NASA-style climate variables. Move the controls and the forecast updates instantly.
+                </p>
               </div>
-              <div class="step">
-                <div class="number">2</div>
-                <p><strong>Classify:</strong> maps WBT output into low, moderate, high, and extreme risk bands.</p>
-              </div>
-              <div class="step">
-                <div class="number">3</div>
-                <p><strong>Act:</strong> produces practical heat action guidance for multiple public-health audiences.</p>
+              <div class="gauge">
+                <div class="gauge-ring" id="gaugeRing">
+                  <div class="gauge-value">
+                    <div class="gauge-number" id="peakValue">--</div>
+                    <div class="gauge-label" id="peakRisk">Loading</div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="panel">
-            <h2>Judge Preview</h2>
-            <img
-              class="montage"
-              src="deliverables/judge_deck_previews/montage.png"
-              alt="HeatGuard AI judge deck preview montage"
-            />
-          </div>
-        </section>
+            <div class="kpis">
+              <div class="kpi">
+                <div class="kpi-label">Day 1 WBT</div>
+                <div class="kpi-value" id="dayOne">--</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Peak Day</div>
+                <div class="kpi-value" id="peakDay">--</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Public Score</div>
+                <div class="kpi-value" style="color: var(--mint)">0.04347</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Browser RMSE</div>
+                <div class="kpi-value" id="browserRmse">0.028</div>
+              </div>
+            </div>
+
+            <div class="panel chart-panel">
+              <div class="chart-head">
+                <div>
+                  <h2>Forecast Curve</h2>
+                  <p class="muted small">Risk bands: Low &lt;24 C, Moderate 24-27 C, High 27-30 C, Extreme 30 C+.</p>
+                </div>
+              </div>
+              <svg id="forecastChart" role="img" aria-label="10-day wet-bulb forecast chart"></svg>
+            </div>
+
+            <div class="details">
+              <div class="panel section">
+                <h2>10-Day Forecast</h2>
+                <table class="forecast-table">
+                  <thead>
+                    <tr>
+                      <th>Day</th>
+                      <th>WBT</th>
+                      <th>Risk</th>
+                      <th>RH</th>
+                    </tr>
+                  </thead>
+                  <tbody id="forecastRows"></tbody>
+                </table>
+              </div>
+
+              <div class="panel section advisory">
+                <h2>Action Advisory</h2>
+                <div class="advice-item" id="adviceMain">Loading advisory.</div>
+                <div class="advice-item" id="adviceOps">Loading operating guidance.</div>
+                <div class="advice-item" id="advicePublic">Loading public guidance.</div>
+              </div>
+            </div>
+          </section>
+        </div>
       </main>
     </div>
 
-    <footer>
-      Built for the Aether IIIT Lucknow Climate Intelligence Challenge 2026. Kaggle data and trained model artifacts
-      are intentionally excluded from the public repository.
-    </footer>
+    <script>
+      const FEATURE_NAMES = [
+        "rel_lat",
+        "rel_lon",
+        "T2M_MAX",
+        "T2M_MIN",
+        "T2M",
+        "RH2M",
+        "QV2M",
+        "TSOIL1",
+        "ALLSKY_SFC_SW_DWN",
+        "CLRSKY_SFC_SW_DWN",
+        "CLOUD_AMT",
+        "GWETTOP",
+        "GWETROOT",
+        "WS10M",
+        "WD10M",
+        "PS",
+        "PRECTOTCORR",
+        "TS",
+        "EVLAND"
+      ];
+
+      const PRESETS = {
+        baseline: {
+          rel_lat: 3.98,
+          rel_lon: 1.31,
+          T2M_MAX: 34.2,
+          T2M_MIN: 24.8,
+          T2M: 29.2,
+          RH2M: 58,
+          QV2M: 13.2,
+          TSOIL1: 30.4,
+          ALLSKY_SFC_SW_DWN: 5.2,
+          CLRSKY_SFC_SW_DWN: 5.8,
+          CLOUD_AMT: 38,
+          GWETTOP: 0.32,
+          GWETROOT: 0.36,
+          WS10M: 2.4,
+          WD10M: 170,
+          PS: 99.3,
+          PRECTOTCORR: 0.4,
+          TS: 30.1,
+          EVLAND: 0.45,
+          heatTrend: 1.2,
+          humidityTrend: 4
+        },
+        heatwave: {
+          rel_lat: 3.98,
+          rel_lon: 1.31,
+          T2M_MAX: 42.0,
+          T2M_MIN: 29.6,
+          T2M: 35.8,
+          RH2M: 42,
+          QV2M: 12.2,
+          TSOIL1: 38.4,
+          ALLSKY_SFC_SW_DWN: 6.7,
+          CLRSKY_SFC_SW_DWN: 6.9,
+          CLOUD_AMT: 16,
+          GWETTOP: 0.19,
+          GWETROOT: 0.28,
+          WS10M: 2.1,
+          WD10M: 245,
+          PS: 98.8,
+          PRECTOTCORR: 0.0,
+          TS: 39.2,
+          EVLAND: 0.22,
+          heatTrend: 1.8,
+          humidityTrend: 2
+        },
+        monsoon: {
+          rel_lat: 3.98,
+          rel_lon: 1.31,
+          T2M_MAX: 33.0,
+          T2M_MIN: 26.4,
+          T2M: 29.5,
+          RH2M: 82,
+          QV2M: 20.4,
+          TSOIL1: 29.8,
+          ALLSKY_SFC_SW_DWN: 3.5,
+          CLRSKY_SFC_SW_DWN: 5.1,
+          CLOUD_AMT: 78,
+          GWETTOP: 0.55,
+          GWETROOT: 0.53,
+          WS10M: 3.0,
+          WD10M: 110,
+          PS: 98.9,
+          PRECTOTCORR: 8.5,
+          TS: 29.2,
+          EVLAND: 0.86,
+          heatTrend: 0.5,
+          humidityTrend: 5
+        }
+      };
+
+      const CONTROL_DEFS = [
+        ["T2M", "Air temperature", 10, 44, 0.1, " C"],
+        ["T2M_MAX", "Daily maximum", 12, 48, 0.1, " C"],
+        ["T2M_MIN", "Daily minimum", 4, 36, 0.1, " C"],
+        ["RH2M", "Relative humidity", 15, 98, 1, "%"],
+        ["QV2M", "Specific humidity", 2, 24, 0.1, " g/kg"],
+        ["PS", "Surface pressure", 94, 102, 0.1, " kPa"],
+        ["WS10M", "Wind speed", 0.2, 8, 0.1, " m/s"],
+        ["CLOUD_AMT", "Cloud cover", 0, 100, 1, "%"],
+        ["PRECTOTCORR", "Rainfall", 0, 25, 0.1, " mm"],
+        ["ALLSKY_SFC_SW_DWN", "Solar radiation", 0.5, 8, 0.1, " kWh/m2"],
+        ["TSOIL1", "Soil temperature", 8, 45, 0.1, " C"],
+        ["heatTrend", "10-day heat trend", -3, 5, 0.1, " C"],
+        ["humidityTrend", "10-day RH trend", -18, 18, 1, "%"]
+      ];
+
+      let model = null;
+      let state = { ...PRESETS.baseline };
+      let latestForecast = [];
+
+      const controlsEl = document.getElementById("controls");
+      const modelStatus = document.getElementById("modelStatus");
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function riskForWbt(value) {
+        if (value >= 30) return { label: "Extreme", color: "var(--red)", score: 100 };
+        if (value >= 27) return { label: "High", color: "var(--amber)", score: 76 };
+        if (value >= 24) return { label: "Moderate", color: "var(--cyan)", score: 56 };
+        return { label: "Low", color: "var(--mint)", score: 30 };
+      }
+
+      function format(value, digits = 1) {
+        return Number(value).toFixed(digits);
+      }
+
+      function fallbackPredict(row) {
+        const t = row.T2M;
+        const rh = clamp(row.RH2M, 1, 100);
+        const q = row.QV2M || 10;
+        const hotRange = (row.T2M_MAX || t) - (row.T2M_MIN || t);
+        return (
+          0.54 * t +
+          0.11 * row.T2M_MAX +
+          0.08 * row.T2M_MIN +
+          0.055 * rh +
+          0.18 * q -
+          3.2 -
+          0.05 * hotRange -
+          0.04 * (row.WS10M || 2.5)
+        );
+      }
+
+      function predictWbt(row) {
+        if (!model) return clamp(fallbackPredict(row), 0, 45);
+        const values = model.features.map((feature, index) => {
+          const raw = Number(row[feature]);
+          return Number.isFinite(raw) ? raw : model.medians[index];
+        });
+        const scaled = values.map((value, index) => (value - model.mean[index]) / model.scale[index]);
+        let y = model.intercept;
+        for (let i = 0; i < model.coef.length; i += 1) {
+          let term = 1;
+          const powers = model.powers[i];
+          for (let j = 0; j < powers.length; j += 1) {
+            const power = powers[j];
+            if (power === 1) term *= scaled[j];
+            else if (power === 2) term *= scaled[j] * scaled[j];
+            else if (power === 3) term *= scaled[j] * scaled[j] * scaled[j];
+          }
+          y += model.coef[i] * term;
+        }
+        return clamp(y, 0, 45);
+      }
+
+      function normalizeClimateRow(row) {
+        row.T2M_MAX = Math.max(row.T2M_MAX, row.T2M + 0.4);
+        row.T2M_MIN = Math.min(row.T2M_MIN, row.T2M - 0.4);
+        row.TSOIL1 = Number.isFinite(row.TSOIL1) ? row.TSOIL1 : row.T2M;
+        row.TS = Number.isFinite(row.TS) ? row.TS : row.T2M;
+        row.QV2M = clamp(row.QV2M, 1, 28);
+        row.RH2M = clamp(row.RH2M, 5, 100);
+        return row;
+      }
+
+      function dayState(day) {
+        const phase = (day - 1) / 9;
+        const wave = Math.sin(day * 0.75);
+        const wave2 = Math.sin(day * 0.62 + 1.1);
+        const row = { ...state };
+        row.T2M = state.T2M + state.heatTrend * phase + wave * 0.35;
+        row.T2M_MAX = state.T2M_MAX + state.heatTrend * phase + wave * 0.5;
+        row.T2M_MIN = state.T2M_MIN + state.heatTrend * phase * 0.7 + wave2 * 0.3;
+        row.RH2M = clamp(state.RH2M + state.humidityTrend * phase + wave2 * 1.6, 5, 100);
+        row.QV2M = clamp(state.QV2M + (row.RH2M - state.RH2M) * 0.08 + phase * 0.25, 1, 28);
+        row.TSOIL1 = state.TSOIL1 + state.heatTrend * phase * 0.8 + wave * 0.25;
+        row.TS = state.TS + state.heatTrend * phase * 0.85 + wave * 0.25;
+        row.CLOUD_AMT = clamp(state.CLOUD_AMT + state.humidityTrend * phase * 0.45 + wave2 * 4, 0, 100);
+        row.PRECTOTCORR = clamp(state.PRECTOTCORR + Math.max(0, state.humidityTrend) * phase * 0.08 + wave2 * 0.18, 0, 40);
+        row.EVLAND = clamp(state.EVLAND + phase * 0.03 - row.PRECTOTCORR * 0.005, 0, 1.4);
+        return normalizeClimateRow(row);
+      }
+
+      function buildForecast() {
+        return Array.from({ length: 10 }, (_, i) => {
+          const day = i + 1;
+          const row = dayState(day);
+          const predicted = predictWbt(row);
+          return {
+            day,
+            wbt: predicted,
+            rh: row.RH2M,
+            risk: riskForWbt(predicted)
+          };
+        });
+      }
+
+      function renderControls() {
+        controlsEl.innerHTML = CONTROL_DEFS.map(([key, label, min, max, step, unit]) => {
+          const value = state[key];
+          return `
+            <label class="control" for="${key}">
+              <span class="control-top">
+                <span>${label}</span>
+                <span class="control-value" id="${key}-value">${format(value, step < 1 ? 1 : 0)}${unit}</span>
+              </span>
+              <input id="${key}" type="range" min="${min}" max="${max}" step="${step}" value="${value}" data-unit="${unit}" />
+            </label>
+          `;
+        }).join("");
+
+        CONTROL_DEFS.forEach(([key, , , , step, unit]) => {
+          const input = document.getElementById(key);
+          input.addEventListener("input", () => {
+            state[key] = Number(input.value);
+            document.getElementById(`${key}-value`).textContent = `${format(state[key], step < 1 ? 1 : 0)}${unit}`;
+            setActivePreset(null);
+            update();
+          });
+        });
+      }
+
+      function setActivePreset(name) {
+        document.querySelectorAll(".preset").forEach((button) => {
+          button.classList.toggle("active", button.dataset.preset === name);
+        });
+      }
+
+      function applyPreset(name) {
+        state = { ...PRESETS[name] };
+        setActivePreset(name);
+        renderControls();
+        update();
+      }
+
+      function updateGauge(peak) {
+        const gaugeRing = document.getElementById("gaugeRing");
+        const risk = peak.risk;
+        const angle = clamp(((peak.wbt - 18) / 16) * 360, 30, 360);
+        gaugeRing.style.setProperty("--gauge-color", risk.color);
+        gaugeRing.style.setProperty("--gauge-angle", `${angle}deg`);
+        document.getElementById("peakValue").textContent = `${format(peak.wbt)} C`;
+        document.getElementById("peakRisk").textContent = risk.label;
+      }
+
+      function renderKpis(forecast) {
+        const dayOne = forecast[0];
+        const peak = forecast.reduce((best, row) => (row.wbt > best.wbt ? row : best), forecast[0]);
+        document.getElementById("dayOne").textContent = `${format(dayOne.wbt)} C`;
+        document.getElementById("peakDay").textContent = `Day ${peak.day}`;
+        updateGauge(peak);
+      }
+
+      function renderChart(forecast) {
+        const svg = document.getElementById("forecastChart");
+        const width = svg.clientWidth || 800;
+        const height = svg.clientHeight || 360;
+        const pad = { left: 46, right: 20, top: 22, bottom: 38 };
+        const minY = Math.min(18, Math.floor(Math.min(...forecast.map((d) => d.wbt)) - 1));
+        const maxY = Math.max(34, Math.ceil(Math.max(...forecast.map((d) => d.wbt)) + 1));
+        const x = (day) => pad.left + ((day - 1) / 9) * (width - pad.left - pad.right);
+        const y = (value) => pad.top + ((maxY - value) / (maxY - minY)) * (height - pad.top - pad.bottom);
+
+        const zones = [
+          [minY, 24, "rgba(88, 237, 183, 0.08)"],
+          [24, 27, "rgba(125, 211, 252, 0.1)"],
+          [27, 30, "rgba(244, 181, 71, 0.12)"],
+          [30, maxY, "rgba(243, 107, 107, 0.12)"]
+        ];
+
+        const zoneMarkup = zones.map(([z0, z1, color]) => {
+          const top = y(z1);
+          const bottom = y(z0);
+          return `<rect x="${pad.left}" y="${top}" width="${width - pad.left - pad.right}" height="${bottom - top}" fill="${color}" />`;
+        }).join("");
+
+        const grid = [20, 24, 27, 30, 34].filter((v) => v >= minY && v <= maxY).map((value) => {
+          const yy = y(value);
+          return `
+            <line x1="${pad.left}" y1="${yy}" x2="${width - pad.right}" y2="${yy}" stroke="rgba(255,255,255,0.12)" />
+            <text x="8" y="${yy + 4}" fill="#a9b9b2" font-size="12">${value}</text>
+          `;
+        }).join("");
+
+        const points = forecast.map((row) => `${x(row.day)},${y(row.wbt)}`).join(" ");
+        const circles = forecast.map((row) => `
+          <circle cx="${x(row.day)}" cy="${y(row.wbt)}" r="5" fill="${row.risk.color}" stroke="#03100a" stroke-width="2" />
+          <text x="${x(row.day) - 8}" y="${height - 12}" fill="#a9b9b2" font-size="12">D${row.day}</text>
+        `).join("");
+
+        svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        svg.innerHTML = `
+          ${zoneMarkup}
+          ${grid}
+          <polyline points="${points}" fill="none" stroke="#58edb7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+          ${circles}
+          <text x="${pad.left}" y="15" fill="#a9b9b2" font-size="12">WBT (C)</text>
+        `;
+      }
+
+      function renderTable(forecast) {
+        document.getElementById("forecastRows").innerHTML = forecast.map((row) => `
+          <tr>
+            <td>Day ${row.day}</td>
+            <td>${format(row.wbt)} C</td>
+            <td><span class="risk-badge" style="background:${row.risk.color}">${row.risk.label}</span></td>
+            <td>${format(row.rh, 0)}%</td>
+          </tr>
+        `).join("");
+      }
+
+      function renderAdvisory(forecast) {
+        const peak = forecast.reduce((best, row) => (row.wbt > best.wbt ? row : best), forecast[0]);
+        const risk = peak.risk.label;
+        const main = {
+          Low: "Low risk: maintain routine hydration messaging and continue monitoring high-humidity windows.",
+          Moderate: "Moderate risk: schedule outdoor work earlier, increase water breaks, and watch vulnerable groups.",
+          High: "High risk: reduce strenuous outdoor exposure, prepare cooling spaces, and coordinate hospital readiness.",
+          Extreme: "Extreme risk: activate heat action protocols, restrict peak-hour outdoor work, and issue urgent advisories."
+        };
+        document.getElementById("adviceMain").textContent = `${risk} peak on Day ${peak.day}: ${main[risk]}`;
+        document.getElementById("adviceOps").textContent =
+          "Operations: use the peak day and trend direction to prioritize school timings, worker shifts, public water points, and hospital staffing.";
+        document.getElementById("advicePublic").textContent =
+          "Public guidance: keep fluids available, avoid direct sun during afternoon hours, and seek help quickly for dizziness, confusion, or hot dry skin.";
+      }
+
+      function update() {
+        latestForecast = buildForecast();
+        renderKpis(latestForecast);
+        renderChart(latestForecast);
+        renderTable(latestForecast);
+        renderAdvisory(latestForecast);
+      }
+
+      function downloadForecast() {
+        const header = "day,predicted_wbt_c,risk_category,relative_humidity_pct";
+        const rows = latestForecast.map((row) => [
+          row.day,
+          format(row.wbt, 3),
+          row.risk.label,
+          format(row.rh, 1)
+        ].join(","));
+        const blob = new Blob([[header, ...rows].join("\\n")], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "heatguard_forecast.csv";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      async function loadModel() {
+        try {
+          const response = await fetch("assets/browser_wbt_model.json", { cache: "no-store" });
+          if (!response.ok) throw new Error("model fetch failed");
+          model = await response.json();
+          document.getElementById("browserRmse").textContent = format(model.metrics.rmse, 3);
+          modelStatus.textContent = "Client model active";
+        } catch (error) {
+          model = null;
+          modelStatus.textContent = "Fallback model active";
+        }
+      }
+
+      document.querySelectorAll(".preset").forEach((button) => {
+        button.addEventListener("click", () => applyPreset(button.dataset.preset));
+      });
+      document.getElementById("downloadCsv").addEventListener("click", downloadForecast);
+      window.addEventListener("resize", () => renderChart(latestForecast));
+
+      renderControls();
+      loadModel().then(update);
+    </script>
   </body>
 </html>
