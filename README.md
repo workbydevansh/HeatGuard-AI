@@ -1,33 +1,71 @@
 # HeatGuard AI
 
-**10-Day Wet-Bulb Heat Risk Forecasting & Action Intelligence**
+**10-Day Wet-Bulb Heat Risk Forecasting and Action Intelligence**
 
-HeatGuard AI is a deployable climate-intelligence dashboard built for the **IIIT Lucknow Climate Intelligence Challenge 2026**. It forecasts future wet-bulb temperature, classifies heat-risk levels, explains the model drivers, and generates audience-specific action plans for citizens, hospitals, schools, outdoor workers, and local authorities.
+HeatGuard AI is a climate-intelligence system built for the **IIIT Lucknow Climate Intelligence Challenge 2026**. It forecasts wet-bulb temperature up to 10 days ahead, classifies public-health heat risk, and converts model output into practical action guidance for citizens, schools, hospitals, outdoor workers, and local authorities.
 
-## Problem Statement
+## Live Links
 
-Extreme heat becomes especially dangerous when high air temperature combines with high humidity. Wet-bulb temperature captures that combined physiological stress better than temperature alone. HeatGuard AI predicts wet-bulb heat risk up to 10 days ahead and turns model output into practical decision support.
+- Live demo: https://heat-guard-ai.vercel.app
+- GitHub repository: https://github.com/workbydevansh/HeatGuard-AI
+- Kaggle public leaderboard score: **0.04347**
+- Public leaderboard rank at submission time: **2**
 
-## Why Wet-Bulb Temperature Matters
+The final Kaggle rank may differ because the public leaderboard uses about 30% of the test data and the final evaluation uses the hidden 70% split.
 
-Wet-bulb temperature estimates the lowest temperature achievable through evaporative cooling. When wet-bulb values rise, the human body has a harder time cooling itself through sweat. High wet-bulb conditions can raise the risk of heat exhaustion, heat stroke, hospital surges, school disruption, and unsafe outdoor work.
+## Problem
 
-## Features
+Extreme heat becomes more dangerous when high temperature combines with high humidity. Wet-bulb temperature captures this combined physiological stress better than air temperature alone because it reflects the body's ability to cool through evaporation.
 
-- Automatic CSV discovery from `data/`
-- Synthetic demo dataset fallback when no real Kaggle data is present
-- Automatic target, date, and station/location column detection
-- Time features, cyclical calendar features, lag features, and rolling climate features
-- Time-aware validation when a date column is available
-- Candidate model training with Random Forest, HistGradientBoosting, and Extra Trees
-- Optional XGBoost and LightGBM support if installed locally
-- Best model selection by validation RMSE
-- 10-day direct lead-time forecasting with risk categories
-- Plotly forecast chart, risk gauge, historical trend, feature importance, and risk distribution
-- Gemini-powered heat advisory via `GEMINI_API_KEY`
-- Strong rule-based advisory fallback when Gemini is not configured
-- Streamlit dark climate-tech dashboard
-- Hugging Face Spaces compatible layout
+HeatGuard AI answers three operational questions:
+
+- How risky will wet-bulb heat become over the next 10 days?
+- Which days require the most attention?
+- What should different audiences do before the peak risk arrives?
+
+## What The Demo Does
+
+The deployed Vercel demo is an interactive browser dashboard. Judges can adjust climate parameters such as air temperature, humidity, rainfall, wind speed, cloud cover, and heat trend. The app recalculates:
+
+- 10-day wet-bulb temperature forecast
+- Peak risk day and risk category
+- Forecast curve with risk bands
+- Day-wise forecast table
+- Audience-specific action advisory
+- Downloadable forecast CSV
+
+The browser demo uses a lightweight client-side polynomial WBT estimator exported from the training workflow so it can run instantly without exposing Kaggle data or large model artifacts.
+
+## Kaggle Approach
+
+For the competition submission, the final selected Kaggle entries were:
+
+- `submission_blend_poly95_extra5_offset1.zip` with public score **0.04347**
+- `submission_poly3_offset1.zip` with public score **0.04421**
+
+The best public submission blends a polynomial wet-bulb estimator with an ExtraTrees model and uses next-day aligned target columns for `target_day_1` through `target_day_10`.
+
+## Modeling
+
+HeatGuard AI uses weather and location variables from the challenge dataset, including:
+
+- Air temperature, min/max temperature, and soil/surface temperature
+- Relative and specific humidity
+- Wind speed and direction
+- Surface pressure
+- Rainfall, cloud cover, and solar radiation
+- Relative latitude and longitude
+
+The Streamlit workflow in `app.py` supports trained model artifacts, feature engineering, risk visualization, explainability, and action advisory generation. The Vercel demo uses a compact browser-side estimator for live interaction.
+
+## Risk Bands
+
+| Wet-bulb temperature | Risk level |
+| --- | --- |
+| Below 24 C | Low |
+| 24 C to 27 C | Moderate |
+| 27 C to 30 C | High |
+| 30 C and above | Extreme |
 
 ## Tech Stack
 
@@ -36,213 +74,59 @@ Wet-bulb temperature estimates the lowest temperature achievable through evapora
 - Pandas and NumPy
 - scikit-learn
 - Plotly
-- joblib
-- google-generativeai
-- python-dotenv
+- Vercel static deployment
+- Browser-side JavaScript predictor
 
-## Folder Structure
+## Repository Structure
 
 ```text
 HeatGuard-AI/
-|
-|-- app.py
+|-- index.html                  # Live Vercel dashboard
+|-- app.py                      # Streamlit dashboard
 |-- requirements.txt
-|-- README.md
-|-- .gitignore
-|-- .env.example
-|
-|-- data/
-|   |-- README.md
-|   |-- .gitkeep
-|
-|-- models/
-|   |-- .gitkeep
-|
 |-- assets/
+|   |-- browser_wbt_model.json  # Lightweight browser-side WBT model
 |   |-- heatguard_logo.svg
 |   |-- climate_hero.svg
-|
 |-- src/
-|   |-- __init__.py
-|   |-- config.py
-|   |-- data_loader.py
-|   |-- preprocessing.py
 |   |-- feature_engineering.py
 |   |-- model.py
 |   |-- train.py
 |   |-- predict.py
-|   |-- explainability.py
 |   |-- advisory.py
-|   |-- utils.py
-|
-|-- notebooks/
-|   |-- experimentation_template.ipynb
-|
+|   |-- explainability.py
 |-- scripts/
-    |-- train_model.py
-    |-- make_submission.py
+|   |-- train_model.py
+|   |-- make_submission.py
+|-- deliverables/
+|   |-- HeatGuard_AI_Judge_Ready_Deck.pptx
+|-- data/
+|   |-- README.md
+|-- models/
+|   |-- .gitkeep
 ```
 
-## Local Setup
+Large Kaggle CSV files, trained `.joblib` artifacts, `.env`, and generated submission files are intentionally excluded from the public repository.
+
+## Run Locally
 
 ```bash
-python -m venv venv
-source venv/bin/activate  # for Mac/Linux
-venv\Scripts\activate     # for Windows
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Add the Kaggle Dataset
-
-Competition page:
-
-https://www.kaggle.com/competitions/aether-iiit-lucknow-wet-bulb-forecasting-challenge-2026
-
-1. Download the challenge dataset from Kaggle.
-2. Place CSV files in the `data/` folder.
-3. If the main file is named `train.csv`, HeatGuard AI uses it automatically.
-4. If multiple CSV files exist, select the desired file in the dashboard.
-5. If the target column is not auto-detected, select it in the app or pass it to the training script.
-
-The app does not use external datasets by default. When no real CSV is present, it uses a small synthetic demo dataset only for UI testing and clearly labels it as demo fallback data.
-
-Optional Kaggle CLI download:
-
-```bash
-pip install kaggle
-kaggle competitions download -c aether-iiit-lucknow-wet-bulb-forecasting-challenge-2026 -p data
-```
-
-After download, unzip the archive inside `data/`, then run training again.
-
-## Train the Model
+To train with the Kaggle data locally, place the competition CSV files under `data/` and run:
 
 ```bash
 python scripts/train_model.py
 ```
 
-Optional arguments:
-
-```bash
-python scripts/train_model.py --csv data/train.csv --target-col wet_bulb_c --date-col date --location-col station --horizon 10
-```
-
-Training outputs:
-
-- `models/heatguard_model.joblib`
-- `models/metrics.json`
-- `models/features.json`
-
-## Run the Dashboard Locally
-
-```bash
-streamlit run app.py
-```
-
-The dashboard is now competition-demo focused. It automatically detects the Kaggle folder under `data/`, loads `models/heatguard_model.joblib`, lets judges select a Kaggle location/day index, and shows the 10-day wet-bulb forecast, risk gauge, explainability, advisory, validation, and submission readiness.
-
-## Final Competition Workflow
-
-1. Place Kaggle files under `data/aether-iiit-lucknow-wet-bulb-forecasting-challenge-2026/`.
-2. Place trained artifacts under `models/`:
-   - `heatguard_model.joblib`
-   - `metrics.json`
-   - `features.json`
-3. Generate Kaggle submission:
+To generate a Kaggle-format submission:
 
 ```bash
 python scripts/make_submission.py --data-dir data/aether-iiit-lucknow-wet-bulb-forecasting-challenge-2026 --output submission.csv --horizon 10 --target-col WBT
 ```
 
-4. Run the dashboard:
-
-```bash
-streamlit run app.py
-```
-
-## Gemini API Configuration
-
-Create `.env` from `.env.example` and add:
-
-```bash
-GEMINI_API_KEY=your_key_here
-```
-
-The app loads the key from the environment. If no key is present, HeatGuard AI uses a rule-based advisory system instead of failing.
-
-## Hugging Face Spaces Deployment
-
-1. Create new Hugging Face Space
-2. Select Streamlit SDK
-3. Connect GitHub repo or upload files
-4. Add GEMINI_API_KEY in Space Secrets
-5. Deploy
-
-Notes:
-
-- Keep `app.py` at the repository root.
-- Keep `requirements.txt` at the repository root.
-- Add Kaggle data only if competition rules allow redistribution.
-- Otherwise, upload the dataset manually in the dashboard during the demo.
-
-## GitHub Upload
-
-```bash
-git init
-git add .
-git commit -m "Initial commit: HeatGuard AI climate intelligence platform"
-git branch -M main
-git remote add origin <YOUR_GITHUB_REPO_URL>
-git push -u origin main
-```
-
-## Model and Validation Approach
-
-HeatGuard AI creates a supervised direct forecasting dataset by shifting the wet-bulb target into the future for the selected horizon. Lag and rolling features are computed from current and previous observations only, preventing future target leakage.
-
-Validation:
-
-- Uses chronological 80/20 split when a date column exists
-- Uses random train/test split only when no date column exists
-- Reports MAE, RMSE, and R2
-- Selects the best candidate model by RMSE
-
-Wet-bulb risk thresholds:
-
-- Low: below 24 C
-- Moderate: 24 to 27 C
-- High: 27 to 30 C
-- Extreme: 30 C and above
-
-Thresholds are centralized in `src/config.py` and can be adjusted for domain guidance.
-
-## Demo Screenshots
-
-Add screenshots here after running the dashboard:
-
-- Hero and KPI overview
-- 10-day forecast chart
-- Advisory section
-- Model validation section
-
-## Future Scope
-
-- Add calibrated prediction intervals
-- Add geospatial risk maps when station latitude and longitude are available
-- Add SHAP explanations for tree models
-- Add batch forecast export for all stations
-- Add scenario simulation for humidity and temperature stress testing
-- Integrate official local heat action plan documents if allowed by the challenge
-
-## Team
-
-Team name:
-
-Members:
-
-Contact:
-
 ## Responsible Use
 
-HeatGuard AI is decision-support software. It should not be represented as an official government alerting system unless integrated, validated, and approved by the relevant authorities.
+HeatGuard AI is decision-support software. It should support planning and awareness, not replace official weather alerts, medical judgment, or government heat-action protocols.
